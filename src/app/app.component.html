@@ -1,35 +1,53 @@
-<div class="card text-center">
-  <div class="card-header">
+<div class="card text-bg-dark mb-3">
+  <div class="card-header text-center">
     Red neuronal
   </div>
   <div class="card-body">
-    <h5 class="card-title">Parametrización de red neuronal</h5>
+    <h5 class="card-title text-center">Parametrización de red neuronal</h5>
 
     <div class="shadow-sm p-3 mb-5 bg-body rounded row">
+      <div class="row mb-2">
+        <div class="col">
+          <span class="badge bg-secondary">CARGAR DATOS</span>
+        </div>
+      </div>
       <div class="row">
         <div class="input-group mb-3">
           <input type="file" (change)="leerDatos($event)" class="form-control" id="inputGroupFile01">
         </div>
       </div>
+
+      <div class="row mb-2">
+
+        <div class="col">
+          <span class="badge bg-secondary">PARAMETROS DE ENTRADA</span>
+        </div>
+
+      </div>
       <div class="row">
         <div class="col ms-5">
-          <div class="text-nowrap bg-light border" style="width: 14rem;">
+          <div class="text-nowrap bg-light border  " id="tituloCapa" style="width: 14rem;">
             Cantidad de entradas: {{totalEntradas}}
           </div>
         </div>
         <div class="col">
-          <div class="text-nowrap bg-light border" style="width: 14rem;">
+          <div class="text-nowrap bg-light border" id="tituloCapa" style="width: 14rem;">
             Cantidad de salidas: {{totalSalidas}}
           </div>
         </div>
         <div class="col">
-          <div class="text-nowrap bg-light border" style="width: 14rem;">
+          <div class="text-nowrap bg-light border" id="tituloCapa" style="width: 14rem;">
             Cantidad de patrones: {{totalPatrones}}
           </div>
         </div>
       </div>
     </div>
 
+    <div class="row mb-2">
+      <div class="col">
+        <span class="badge bg-secondary">CONFIGURACION DE LA RED</span>
+      </div>
+    </div>
     <div class="row">
       <div class="col">
         <div class="input-group mb-3">
@@ -42,9 +60,9 @@
         </div>
       </div>
       <div class="col">
-        <div class="input-group mb-3">
-          <label class="input-group-text" for="inputGroupSelect01">Tipo de red</label>
-          <select (change)="getTipoRedF($event)" class="form-select" id="inputGroupSelect01">
+        <div class="input-group mb-2">
+          <label class="input-group-text" for="inputGroupSelect01">Modelo de la red</label>
+          <select (change)="getModeloDeRed($event)" class="form-select" id="inputGroupSelect01">
             <option selected>--</option>
             <option value="PERCEPTRON">PERCEPTRON</option>
             <option value="ADALINE">ADALINE</option>
@@ -55,7 +73,17 @@
 
     </div>
 
-    <div class="row" >
+    <div class="row mb-3" *ngIf="this.tipoRed && this.tipoRed == 'Multicapa'" >
+      <div class="col">
+        <div class="input-group">
+          <span class="input-group-text" id="inputGroup-sizing-default">Algoritmo de entrenamiento: </span>
+          <input disabled type="text" [(ngModel)]="algoritmoDeEntrenamiento" class="form-control"
+            aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+        </div>
+      </div>
+    </div>
+
+    <div class="row" *ngIf="tipoRed=='Unicapa'">
       <div class="col">
         <div class="input-group mb-3">
           <label class="input-group-text" for="inputGroupSelect01">Función de activación</label>
@@ -65,11 +93,101 @@
           </select>
         </div>
       </div>
+      <div class="col">
+        <div class="input-group">
+          <span class="input-group-text" id="inputGroup-sizing-default">Algoritmo de entrenamiento: </span>
+          <input disabled type="text" [(ngModel)]="algoritmoDeEntrenamiento" class="form-control"
+            aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+        </div>
+      </div>
     </div>
 
-    <a href="#" class="btn btn-success">Listo</a>
+    <div class="row" *ngIf="tipoRed=='Multicapa'">
+      <div class="col">
+        <div class="input-group mb-3">
+          <label class="input-group-text" for="inputGroupSelect01">Cuantas capas?</label>
+          <select (change)="getCantidadCapas($event)" class="form-select" id="inputGroupSelect01">
+            <option selected>--</option>
+            <option ngValue="1">1</option>
+            <option ngValue="2">2</option>
+            <option ngValue="3">3</option>
+          </select>
+        </div>
+      </div>
+
+
+        <div class="col-6">
+          <div class="input-group mb-3">
+            <label class="input-group-text" for="inputGroupSelect01">Funcion de activacion capa salida</label>
+            <select (change)="getFuncionActvacionCapaSalida($event)" class="form-select" id="inputGroupSelect01">
+              <option selected>--</option>
+              <option *ngFor="let funcion of listaFuncionesActivacion" ngValue="funcion">{{funcion}}</option>
+            </select>
+          </div>
+        </div>
+
+
+    </div>
+    <div *ngIf="this.tipoRed && this.tipoRed == 'Multicapa' && this.cantidadDeCapas!=0"
+      class="shadow-sm p-3 mb-5 mt-2 bg-body rounded">
+      <div *ngFor="let capa of listaCapas;let i=index">
+        <h6 id="tituloCapa">Capa {{i+1}}</h6>
+        <div class="row">
+          <div class="col-6">
+            <div class="input-group">
+              <span class="input-group-text" id="inputGroup-sizing-default">Cantidad de neuronas</span>
+              <input (change)="getCantidadNeuronas(i,$event)" type="text" class="form-control"
+                aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="input-group mb-3">
+              <label class="input-group-text" for="inputGroupSelect01">Funcion de activacion</label>
+              <select (change)="getFuncionActvacionMulticapa(i,$event)" class="form-select" id="inputGroupSelect01">
+                <option selected>--</option>
+                <option *ngFor="let funcion of listaFuncionesActivacion" ngValue="funcion">{{funcion}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col">
+        <span class="badge bg-secondary">PARAMETROS DE ENTRENAMIENTO</span>
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="col">
+        <div class="input-group">
+          <span class="input-group-text" id="inputGroup-sizing-default">Numero de iteraciones</span>
+          <input type="text" class="form-control" aria-label="Sizing example input"
+            aria-describedby="inputGroup-sizing-default">
+        </div>
+      </div>
+      <div class="col">
+        <div class="input-group">
+          <span class="input-group-text" id="inputGroup-sizing-default">Rata de aprendizaje</span>
+          <input type="text" class="form-control" aria-label="Sizing example input"
+            aria-describedby="inputGroup-sizing-default">
+        </div>
+      </div>
+      <div class="col">
+        <div class="input-group">
+          <span class="input-group-text" id="inputGroup-sizing-default">Error maximo permitido</span>
+          <input type="text" class="form-control" aria-label="Sizing example input"
+            aria-describedby="inputGroup-sizing-default">
+        </div>
+      </div>
+    </div>
+
+    <a href="#" (click)="generarArchivo()" class="btn btn-success mt-2">Guardar matriz de pesos</a>
   </div>
-  <div class="card-footer text-muted">
-    AJAM AJAM
+  <div class="card-footer text-muted ">
+   <h6 class="text-center" id="vea"> AJAM AJAM </h6>
   </div>
 </div>
