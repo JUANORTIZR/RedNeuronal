@@ -128,7 +128,7 @@
 
 
     </div>
-    <div *ngIf="this.tipoRed && this.tipoRed == 'Multicapa' && this.cantidadDeCapas!=0"
+    <div *ngIf="this.tipoRed && this.tipoRed == 'Multicapa' && this.cantidadDeCapas!='--'"
       class="shadow-sm p-3 mb-5 mt-2 bg-body rounded">
       <div *ngFor="let capa of listaCapas;let i=index">
         <h6 id="tituloCapa">Capa {{i+1}}</h6>
@@ -165,21 +165,21 @@
       <div class="col">
         <div class="input-group">
           <span class="input-group-text" id="inputGroup-sizing-default">Numero de iteraciones</span>
-          <input type="text" class="form-control" aria-label="Sizing example input"
+          <input [(ngModel)]="numeroDeIteraciones" type="number" class="form-control" aria-label="Sizing example input"
             aria-describedby="inputGroup-sizing-default">
         </div>
       </div>
       <div class="col">
         <div class="input-group">
           <span class="input-group-text" id="inputGroup-sizing-default">Rata de aprendizaje</span>
-          <input type="text" class="form-control" aria-label="Sizing example input"
+          <input [(ngModel)]="rataDeAprendizaje" type="text" class="form-control" aria-label="Sizing example input"
             aria-describedby="inputGroup-sizing-default">
         </div>
       </div>
       <div class="col">
         <div class="input-group">
           <span class="input-group-text" id="inputGroup-sizing-default">Error maximo permitido</span>
-          <input type="text" class="form-control" aria-label="Sizing example input"
+          <input [(ngModel)]="errorMaximoPermititdo" type="text" class="form-control" aria-label="Sizing example input"
             aria-describedby="inputGroup-sizing-default">
         </div>
       </div>
