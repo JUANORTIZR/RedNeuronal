@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Capa } from './Modelos/Capa';
 
 import { saveAs } from 'file-saver';
+import { RouteReuseStrategy } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +20,8 @@ export class AppComponent implements OnInit {
   modeloDeRed: string = "--";
   funcionDeActivacion: string = "--";
 
-
+  datosDeEntrada: number[][] = [];
+  datosDeSalida: number[][] = [];
 
   cantidadDeCapas: string = "--";
 
@@ -27,14 +29,16 @@ export class AppComponent implements OnInit {
 
   listaFuncionesActivacion: string[] = [];
   algoritmoDeEntrenamiento: string;
-  matrizDePesosUnicapa: any[];
-  vectorDeUmbrales: any[];
+  matrizDePesosUnicapa: number[][] = [];
+  vectorDeUmbrales: number[] = [];
   listaMatrices: any[];
-  funcionDeActivacionCapaSalida: string ="--";
+  funcionDeActivacionCapaSalida: string = "--";
   listaUmbrales = [];
-  numeroDeIteraciones: number=0;
-  rataDeAprendizaje: string="";
-  errorMaximoPermititdo: string ="";
+  numeroDeIteraciones: number = 0;
+  rataDeAprendizaje: string = "";
+  errorMaximoPermititdo: string = "";
+  listaEp: number[] = [];
+  listaErrorPorIteraciones: number[] = [];
 
 
   ngOnInit() {
@@ -64,11 +68,39 @@ export class AppComponent implements OnInit {
     this.totalEntradas = identificadores.filter(x => x === "ENTRADA").length;
     this.totalSalidas = identificadores.filter(x => x === "SALIDA").length;
     this.totalPatrones = datos.length - 1;
+    this.separarListas(datos);
     if (this.tipoRed == "Unicapa") {
       this.inicializarMatrizPesosVectorUmbrales();
     }
+
   }
 
+  separarListas(contenido: any) {
+    var titulos = contenido[0].split(";");
+    var listaEntradas = [];
+    var listaSalidas = [];
+    var auxliarEntradas = [];
+    var auxSalidas = [];
+    for (let i = 1; i < contenido.length; i++) {
+      const element1 = contenido[i];
+      auxliarEntradas = [];
+      auxSalidas = [];
+      var aux = element1.split(";");
+      for (let j = 0; j < titulos.length; j++) {
+        const element = titulos[j];
+        if (element == "ENTRADA") {
+          auxliarEntradas.push(Number(aux[j]))
+        } else {
+          auxSalidas.push(Number(aux[j]));
+        }
+      }
+      listaEntradas.push(auxliarEntradas);
+      listaSalidas.push(auxSalidas);
+    }
+
+    this.datosDeEntrada = listaEntradas;
+    this.datosDeSalida = listaSalidas;
+  }
 
   inicializarMatrizPesosVectorUmbrales() {
     let matrizDePesos = [];
@@ -190,8 +222,8 @@ export class AppComponent implements OnInit {
       matrizSalida = this.crearMatriz(this.listaCapas[0].cantidadNeurona, this.totalSalidas);
       umbral1 = this.crearVectorDeUmbral(this.listaCapas[0].cantidadNeurona);
       umbralS = this.crearVectorDeUmbral(this.totalSalidas);
-      this.listaMatrices = [{matrizEntrada,matrizSalida}];
-      this.listaUmbrales = [{umbral1, umbral2}];
+      this.listaMatrices = [{ matrizEntrada, matrizSalida }];
+      this.listaUmbrales = [{ umbral1, umbral2 }];
     }
     if (Number(this.cantidadDeCapas) == 2) {
       matrizEntrada = this.crearMatriz(this.totalEntradas, this.listaCapas[0].cantidadNeurona);
@@ -200,8 +232,8 @@ export class AppComponent implements OnInit {
       umbral1 = this.crearVectorDeUmbral(this.listaCapas[0].cantidadNeurona);
       umbral2 = this.crearVectorDeUmbral(this.listaCapas[1].cantidadNeurona);
       umbralS = this.crearVectorDeUmbral(this.totalSalidas);
-      this.listaMatrices = [{matrizEntrada, matrizC1, matrizC2}];
-      this.listaUmbrales = [{umbral1, umbral2,umbralS}]
+      this.listaMatrices = [{ matrizEntrada, matrizC1, matrizC2 }];
+      this.listaUmbrales = [{ umbral1, umbral2, umbralS }]
     }
     if (Number(this.cantidadDeCapas) == 3) {
       matrizEntrada = this.crearMatriz(this.totalEntradas, this.listaCapas[0].cantidadNeurona);
@@ -212,8 +244,8 @@ export class AppComponent implements OnInit {
       umbral2 = this.crearVectorDeUmbral(this.listaCapas[1].cantidadNeurona);
       umbral3 = this.crearVectorDeUmbral(this.listaCapas[2].cantidadNeurona);
       umbralS = this.crearVectorDeUmbral(this.totalSalidas);
-      this.listaMatrices = [{matrizEntrada, matrizC1, matrizC2,matrizC3}];
-      this.listaUmbrales = [{umbral1, umbral2,umbral3,umbralS}]
+      this.listaMatrices = [{ matrizEntrada, matrizC1, matrizC2, matrizC3 }];
+      this.listaUmbrales = [{ umbral1, umbral2, umbral3, umbralS }]
     }
   }
 
@@ -243,34 +275,34 @@ export class AppComponent implements OnInit {
     return matriz;
   }
 
-  verificarDatosParaUnicapa(){
-    if(this.tipoRed == "Unicapa"){
+  verificarDatosParaUnicapa() {
+    if (this.tipoRed == "Unicapa") {
 
-      if(this.modeloDeRed == "--"){
+      if (this.modeloDeRed == "--") {
         alert("Primero debes seleccionar un modelo de red en el campo modelo de red")
         return false;
       }
-       if(this.funcionDeActivacion == "--"){
+      if (this.funcionDeActivacion == "--") {
         alert("Primero debes seleccionar una función de activación")
         return false;
       }
 
-      if(Number(this.numeroDeIteraciones) <= 0){
+      if (Number(this.numeroDeIteraciones) <= 0) {
         alert("Primero debe digitar un numero de iteraciones [Mayor a 0]")
         return false;
       }
 
-      if(this.rataDeAprendizaje == ""){
+      if (this.rataDeAprendizaje == "") {
         alert("Dijite un valor para la rata de aprendizaje mayor a 0 y menor o igual 1")
         return false;
       }
 
 
-      if(!(Number(this.rataDeAprendizaje) > 0 && Number(this.rataDeAprendizaje) <= 1)){
+      if (!(Number(this.rataDeAprendizaje) > 0 && Number(this.rataDeAprendizaje) <= 1)) {
         alert("Dijite un valor para la rata de aprendizaje mayor a 0 y menor o igual 1")
         return false;
       }
-      if(this.errorMaximoPermititdo == ""){
+      if (this.errorMaximoPermititdo == "") {
         alert("Dijite un valor para el error maximo permitido comprendido entre 0 y 1\nPor ejemplo: 0.1")
         return false;
       }
@@ -280,63 +312,63 @@ export class AppComponent implements OnInit {
         return false;
       }
 
-      if(!this.matrizDePesosUnicapa){
+      if (!this.matrizDePesosUnicapa) {
         alert("Primero debes cargar los datos");
         return false;
-      }else{
+      } else {
         return true;
       }
-    }else{
+    } else {
       return false;
     }
 
   }
 
 
-  verificarDatosParaMulticapa(){
-    if(this.tipoRed == "Multicapa"){
+  verificarDatosParaMulticapa() {
+    if (this.tipoRed == "Multicapa") {
 
-      if(this.modeloDeRed == "--"){
+      if (this.modeloDeRed == "--") {
         alert("Primero debes seleccionar un modelo de red en el campo modelo de red")
         return false;
       }
 
-      if(Number(this.numeroDeIteraciones) <= 0){
+      if (Number(this.numeroDeIteraciones) <= 0) {
         alert("Primero debe digitar un numero de iteraciones [Mayor a 0]")
         return false;
       }
 
-      if(this.cantidadDeCapas == "--" ){
+      if (this.cantidadDeCapas == "--") {
         alert("Primero debe seleccionar la cantidad de capas ocultas para la neurona")
         return false;
       }
 
-      if(this.funcionDeActivacionCapaSalida =="--"){
+      if (this.funcionDeActivacionCapaSalida == "--") {
         alert("Primero debe seleccionar la funcion de activacion para la capa de salida")
         return false;
       }
 
       for (let index = 0; index < this.listaCapas.length; index++) {
-        if(this.listaCapas[index].cantidadNeurona == undefined){
-          alert("Primero debes ingresar la cantidad de neuronas para la capa: "+(index+1));
+        if (this.listaCapas[index].cantidadNeurona == undefined) {
+          alert("Primero debes ingresar la cantidad de neuronas para la capa: " + (index + 1));
           return false;
         }
-        if(this.listaCapas[index].funcionDeActivacion == undefined){
-          alert("Primero debe seleccionar la funcion de activacion para la capa: "+(index+1))
+        if (this.listaCapas[index].funcionDeActivacion == undefined) {
+          alert("Primero debe seleccionar la funcion de activacion para la capa: " + (index + 1))
           return false;
         }
       }
 
-      if(this.rataDeAprendizaje == ""){
+      if (this.rataDeAprendizaje == "") {
         alert("Dijite un valor para la rata de aprendizaje mayor a 0 y menor o igual 1")
         return false;
       }
 
-      if(!(Number(this.rataDeAprendizaje) > 0 && Number(this.rataDeAprendizaje) <= 1)){
+      if (!(Number(this.rataDeAprendizaje) > 0 && Number(this.rataDeAprendizaje) <= 1)) {
         alert("Dijite un valor para la rata de aprendizaje mayor a 0 y menor o igual 1")
         return false;
       }
-      if(this.errorMaximoPermititdo == ""){
+      if (this.errorMaximoPermititdo == "") {
         alert("Dijite un valor para el error maximo permitido comprendido entre 0 y 1\nPor ejemplo: 0.1")
         return false;
       }
@@ -346,28 +378,114 @@ export class AppComponent implements OnInit {
         return false;
       }
 
-      if(this.totalPatrones<0){
+      if (this.totalPatrones < 0) {
         alert("Primero debes cargar los datos");
         return false;
-      }else{
+      } else {
         return true;
       }
-    }else{
+    } else {
       return false;
     }
   }
-  generarArchivo() {
-    if (this.verificarDatosParaUnicapa()) {
-        var blob = new Blob([
-          JSON.stringify("Matriz de pesos unicapa") + "\n",
-          this.matrizDePesosUnicapa + "\n",
-          JSON.stringify("Vector de umbrales") + "\n",
-          this.vectorDeUmbrales + "\n",
-        ], { type: "text/csv;charset=utf-8" });
-        saveAs(blob, "DatosExportados.csv");
-    }
 
-    if(this.verificarDatosParaMulticapa()){
+  funcionSoma(patron: number) {
+    let salidasFuncionSoma: number[] = [];
+    let aux = 0;
+    for (let i = 0; i < this.totalSalidas; i++) {
+      aux = 0;
+      for (let j = 0; j < this.totalEntradas; j++) {
+        aux = aux + (Number(this.datosDeEntrada[patron][j]) * Number(this.matrizDePesosUnicapa[j][i]));
+      }
+      aux = aux - Number(this.vectorDeUmbrales[i]);
+      salidasFuncionSoma.push(Number(aux.toFixed(2)))
+    }
+    return salidasFuncionSoma;
+  }
+
+  salidaDeLaRed(patron: number) {
+    let yR = [];
+    let s = this.funcionSoma(patron);
+    for (let i = 0; i < this.totalSalidas; i++) {
+      if (this.funcionDeActivacion == "LINEAL") {
+        yR.push(s[i]);
+      } else if (this.funcionDeActivacion = "ESCALON") {
+        yR.push(s[i] >= 0 ? 1 : 0);
+      }
+    }
+    console.log("Salida de la red: ", yR);
+    return yR;
+  }
+
+  errorLineal(patron: number) {
+    let eL: number[] = [];
+    let yR = this.salidaDeLaRed(patron);
+    for (let i = 0; i < this.totalSalidas; i++) {
+      let aux = Number((this.datosDeSalida[patron][i] - yR[i]).toFixed(2));
+      eL.push(aux);
+    }
+    console.log("Error lineal: ", eL);
+
+    return eL;
+  }
+
+  errorPatron(patron: number) {
+    let eP = 0;
+    let aux: number = 0;
+    let eL: number[] = this.errorLineal(patron);
+    for (let i = 0; i < this.totalSalidas; i++) {
+      aux += Math.abs(eL[i]);
+    }
+    eP = aux / this.totalSalidas;
+    this.listaEp.push(eP);
+    console.log("Error patron: ", eP);
+  }
+
+  modificarPesos(patron: number) {
+    let aux = 0;
+    let eL = this.errorLineal(patron);
+    for (let i = 0; i < this.totalSalidas; i++) {
+      for (let j = 0; j < this.totalEntradas; j++) {
+        aux = 0;
+        aux = this.matrizDePesosUnicapa[j][i] + Number(this.rataDeAprendizaje) * eL[i] * this.datosDeEntrada[patron][j];
+        this.matrizDePesosUnicapa[j][i] = aux;
+      }
+    }
+    console.log(this.matrizDePesosUnicapa);
+  }
+
+  realizarIteraciones(numeroIteraciones: number) {
+    for (let i = 0; i < numeroIteraciones; i++) {
+
+      for (let j = 0; j < this.totalPatrones; j++) {
+        this.errorPatron(j);
+        this.modificarPesos(j);
+      }
+      this.listaErrorPorIteraciones.push(this.calcularErrorPorIteracion(this.listaEp));
+      this.listaEp = [];
+    }
+  }
+
+  calcularErrorPorIteracion(datos){
+    let aux:number = 0;
+    let eI:number[] = [];
+
+    for(let i = 0; i < datos.length; i++) {
+      aux += Math.abs(datos[i]);
+    }
+    eI.push(aux/this.totalPatrones);
+    console.log("Error por iteracion: ", eI);
+    return aux/this.totalPatrones;
+  }
+
+  generarArchivo() {
+
+    this.realizarIteraciones(this.numeroDeIteraciones);
+    // if (this.verificarDatosParaUnicapa()) {
+
+    // }
+
+    if (this.verificarDatosParaMulticapa()) {
       this.crearMatricesDePesosYUmbralesMulticapa();
       var blob = new Blob([
         JSON.stringify("Lista de matrices de pesos multicapa") + "\n",
