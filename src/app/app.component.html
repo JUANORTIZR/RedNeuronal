@@ -72,7 +72,7 @@
 
     </div>
 
-    <div class="row mb-3" *ngIf="this.tipoRed && this.tipoRed == 'Multicapa'" >
+    <div class="row mb-3" *ngIf="this.tipoRed && this.tipoRed == 'Multicapa'">
       <div class="col">
         <div class="input-group">
           <span class="input-group-text" id="inputGroup-sizing-default">Algoritmo de entrenamiento: </span>
@@ -115,15 +115,15 @@
       </div>
 
 
-        <div class="col-6">
-          <div class="input-group mb-3">
-            <label class="input-group-text" for="inputGroupSelect01">Funcion de activacion capa salida</label>
-            <select (change)="getFuncionActvacionCapaSalida($event)" class="form-select" id="inputGroupSelect01">
-              <option selected>--</option>
-              <option *ngFor="let funcion of listaFuncionesActivacion" ngValue="funcion">{{funcion}}</option>
-            </select>
-          </div>
+      <div class="col-6">
+        <div class="input-group mb-3">
+          <label class="input-group-text" for="inputGroupSelect01">Funcion de activacion capa salida</label>
+          <select (change)="getFuncionActvacionCapaSalida($event)" class="form-select" id="inputGroupSelect01">
+            <option selected>--</option>
+            <option *ngFor="let funcion of listaFuncionesActivacion" ngValue="funcion">{{funcion}}</option>
+          </select>
         </div>
+      </div>
 
 
     </div>
@@ -184,8 +184,19 @@
     </div>
 
     <a href="#" (click)="generarArchivo()" class="btn btn-success mt-2">Guardar matriz de pesos</a>
+
+
   </div>
   <div class="card-footer text-muted ">
-   <h6 class="text-center" id="vea"> AJAM AJAM </h6>
+    <h6 class="text-center" id="vea"> AJAM AJAM </h6>
   </div>
+</div>
+
+<div class="grafica" >
+  <div style="display: block">
+    <canvas mdbChart [chartType]="chartType" [datasets]="chartDatasets" [labels]="chartLabels" [colors]="chartColors"
+      [options]="chartOptions" [legend]="true" (chartHover)="chartHovered($event)" (chartClick)="chartClicked($event)">
+    </canvas>
+  </div>
+
 </div>

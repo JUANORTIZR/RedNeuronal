@@ -39,6 +39,7 @@ export class AppComponent implements OnInit {
   errorMaximoPermititdo: string = "";
   listaEp: number[] = [];
   listaErrorPorIteraciones: number[] = [];
+  iteracionesG:string[] = [];
 
 
   ngOnInit() {
@@ -413,7 +414,7 @@ export class AppComponent implements OnInit {
         yR.push(s[i] >= 0 ? 1 : 0);
       }
     }
-    console.log("Salida de la red: ", yR);
+   // console.log("Salida de la red: ", yR);
     return yR;
   }
 
@@ -424,7 +425,7 @@ export class AppComponent implements OnInit {
       let aux = Number((this.datosDeSalida[patron][i] - yR[i]).toFixed(2));
       eL.push(aux);
     }
-    console.log("Error lineal: ", eL);
+   // console.log("Error lineal: ", eL);
 
     return eL;
   }
@@ -438,49 +439,76 @@ export class AppComponent implements OnInit {
     }
     eP = aux / this.totalSalidas;
     this.listaEp.push(eP);
-    console.log("Error patron: ", eP);
+  //  console.log("Error patron: ", eP);
   }
 
   modificarPesos(patron: number) {
-    let aux = 0;
+    let aux = 0; let auxUm = 0;
     let eL = this.errorLineal(patron);
+    let matriz = this.matrizDePesosUnicapa; let vector=this.vectorDeUmbrales;
     for (let i = 0; i < this.totalSalidas; i++) {
       for (let j = 0; j < this.totalEntradas; j++) {
         aux = 0;
-        aux = this.matrizDePesosUnicapa[j][i] + Number(this.rataDeAprendizaje) * eL[i] * this.datosDeEntrada[patron][j];
-        this.matrizDePesosUnicapa[j][i] = aux;
+        aux = this.matrizDePesosUnicapa[j][i] + (Number(this.rataDeAprendizaje) * eL[i] * this.datosDeEntrada[patron][j]);
+        matriz[j][i] = aux;
       }
+      auxUm = 0;
+      auxUm = this.vectorDeUmbrales[i] + (Number(this.rataDeAprendizaje) * eL[i] * 1);
+      vector[i] = auxUm;
     }
-    console.log(this.matrizDePesosUnicapa);
+
+    this.vectorDeUmbrales = [...vector];
+    this.matrizDePesosUnicapa = [...matriz];
+
+    console.log("Matriz de pesos: ",this.matrizDePesosUnicapa);
+
+    return matriz;
+  //  console.log(this.matrizDePesosUnicapa);
   }
 
-  realizarIteraciones(numeroIteraciones: number) {
-    for (let i = 0; i < numeroIteraciones; i++) {
 
+  realizarIteraciones(numeroIteraciones: number) {
+    this.inicializarMatrizPesosVectorUmbrales();
+    this.listaErrorPorIteraciones = [];
+    let aux = 0;
+    this.iteracionesG = [];
+    for (let i = 0; i < numeroIteraciones; i++) {
+      aux = 0;
+      this.iteracionesG.push((1+i).toString());
       for (let j = 0; j < this.totalPatrones; j++) {
         this.errorPatron(j);
         this.modificarPesos(j);
       }
-      this.listaErrorPorIteraciones.push(this.calcularErrorPorIteracion(this.listaEp));
+      aux = this.calcularErrorPorIteracion(this.listaEp);
+      this.listaErrorPorIteraciones.push(aux);
       this.listaEp = [];
     }
   }
 
   calcularErrorPorIteracion(datos){
     let aux:number = 0;
-    let eI:number[] = [];
+    let eI:number = 0;
 
     for(let i = 0; i < datos.length; i++) {
-      aux += Math.abs(datos[i]);
+      aux += datos[i];
     }
-    eI.push(aux/this.totalPatrones);
-    console.log("Error por iteracion: ", eI);
-    return aux/this.totalPatrones;
+    eI = Number((aux/this.totalPatrones).toFixed(2));
+    aux = 0;
+    console.log("Error por iteracion: ",eI);
+
+    return eI;
   }
 
   generarArchivo() {
 
-    this.realizarIteraciones(this.numeroDeIteraciones);
+
+
+     this.realizarIteraciones(this.numeroDeIteraciones);
+     this.chartLabels = this.iteracionesG;
+     this.chartDatasets = [
+       { data: this.listaErrorPorIteraciones, label: 'Error por iteracion' },
+       { data: [], label: 'Error maximo permitido' }
+     ];
     // if (this.verificarDatosParaUnicapa()) {
 
     // }
@@ -497,7 +525,43 @@ export class AppComponent implements OnInit {
     }
   }
 
+//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa grafica
 
+  chartType = 'line';
+
+  chartDatasets = [
+    { data: this.listaErrorPorIteraciones, label: 'My First dataset' },
+    { data: [], label: 'My Second dataset' }
+  ];
+
+
+
+  chartLabels = ["1"];
+
+  chartColors = [
+    {
+      backgroundColor: 'rgba(105, 0, 132, .2)',
+      borderColor: 'rgba(200, 99, 132, .7)',
+      borderWidth: 2,
+    },
+    {
+      backgroundColor: 'rgba(0, 137, 132, .2)',
+      borderColor: 'rgba(0, 10, 130, .7)',
+      borderWidth: 2,
+    }
+  ];
+
+  chartOptions: any = {
+    responsive: true
+  };
+
+  chartClicked(event: any) {
+    console.log(event);
+  }
+
+  chartHovered(event: any) {
+    console.log(event);
+  }
 
 
 }
