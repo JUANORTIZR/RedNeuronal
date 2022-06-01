@@ -39,7 +39,8 @@ export class AppComponent implements OnInit {
   errorMaximoPermititdo: string = "";
   listaEp: number[] = [];
   listaErrorPorIteraciones: number[] = [];
-  iteracionesG:string[] = [];
+  iteracionesG: string[] = [];
+  errorMaximoGrafi: any;
 
 
   ngOnInit() {
@@ -414,7 +415,7 @@ export class AppComponent implements OnInit {
         yR.push(s[i] >= 0 ? 1 : 0);
       }
     }
-   // console.log("Salida de la red: ", yR);
+    // console.log("Salida de la red: ", yR);
     return yR;
   }
 
@@ -425,7 +426,7 @@ export class AppComponent implements OnInit {
       let aux = Number((this.datosDeSalida[patron][i] - yR[i]).toFixed(2));
       eL.push(aux);
     }
-   // console.log("Error lineal: ", eL);
+    // console.log("Error lineal: ", eL);
 
     return eL;
   }
@@ -439,13 +440,13 @@ export class AppComponent implements OnInit {
     }
     eP = aux / this.totalSalidas;
     this.listaEp.push(eP);
-  //  console.log("Error patron: ", eP);
+    //  console.log("Error patron: ", eP);
   }
 
   modificarPesos(patron: number) {
     let aux = 0; let auxUm = 0;
     let eL = this.errorLineal(patron);
-    let matriz = this.matrizDePesosUnicapa; let vector=this.vectorDeUmbrales;
+    let matriz = this.matrizDePesosUnicapa; let vector = this.vectorDeUmbrales;
     for (let i = 0; i < this.totalSalidas; i++) {
       for (let j = 0; j < this.totalEntradas; j++) {
         aux = 0;
@@ -460,21 +461,33 @@ export class AppComponent implements OnInit {
     this.vectorDeUmbrales = [...vector];
     this.matrizDePesosUnicapa = [...matriz];
 
-    console.log("Matriz de pesos: ",this.matrizDePesosUnicapa);
+    console.log("Matriz de pesos: ", this.matrizDePesosUnicapa);
 
     return matriz;
-  //  console.log(this.matrizDePesosUnicapa);
+    //  console.log(this.matrizDePesosUnicapa);
   }
 
 
   realizarIteraciones(numeroIteraciones: number) {
     this.inicializarMatrizPesosVectorUmbrales();
     this.listaErrorPorIteraciones = [];
+    this.errorMaximoGrafi = [];
     let aux = 0;
     this.iteracionesG = [];
     for (let i = 0; i < numeroIteraciones; i++) {
+      // if(aux <= Number(this.errorMaximoPermititdo)){
+      //   var blob = new Blob([
+      //     JSON.stringify("Matriz de pesoss") + "\n",
+      //     JSON.stringify(this.matrizDePesosUnicapa) + "\n",
+      //     JSON.stringify("Vector de umbrales") + "\n",
+      //     JSON.stringify(this.vectorDeUmbrales) + "\n",
+      //   ], { type: "text/csv;charset=utf-8" });
+      //   saveAs(blob, "DatosExportados.csv");
+      // }
       aux = 0;
-      this.iteracionesG.push((1+i).toString());
+
+      this.iteracionesG.push((1 + i).toString());
+      this.errorMaximoGrafi.push(this.errorMaximoPermititdo.toString());
       for (let j = 0; j < this.totalPatrones; j++) {
         this.errorPatron(j);
         this.modificarPesos(j);
@@ -485,17 +498,16 @@ export class AppComponent implements OnInit {
     }
   }
 
-  calcularErrorPorIteracion(datos){
-    let aux:number = 0;
-    let eI:number = 0;
+  calcularErrorPorIteracion(datos) {
+    let aux: number = 0;
+    let eI: number = 0;
 
-    for(let i = 0; i < datos.length; i++) {
+    for (let i = 0; i < datos.length; i++) {
       aux += datos[i];
     }
-    eI = Number((aux/this.totalPatrones).toFixed(2));
+    eI = Number((aux / this.totalPatrones).toFixed(2));
     aux = 0;
-    console.log("Error por iteracion: ",eI);
-
+    console.log("Error por iteracion: ", eI);
     return eI;
   }
 
@@ -503,15 +515,15 @@ export class AppComponent implements OnInit {
 
 
 
-     this.realizarIteraciones(this.numeroDeIteraciones);
-     this.chartLabels = this.iteracionesG;
-     this.chartDatasets = [
-       { data: this.listaErrorPorIteraciones, label: 'Error por iteracion' },
-       { data: [], label: 'Error maximo permitido' }
-     ];
-    // if (this.verificarDatosParaUnicapa()) {
 
-    // }
+    if (this.verificarDatosParaUnicapa()) {
+      this.realizarIteraciones(this.numeroDeIteraciones);
+      this.chartLabels = this.iteracionesG;
+      this.chartDatasets = [
+        { data: this.listaErrorPorIteraciones, label: 'Error por iteracion' },
+        { data: this.errorMaximoGrafi, label: 'Error maximo permitido' }
+      ];
+    }
 
     if (this.verificarDatosParaMulticapa()) {
       this.crearMatricesDePesosYUmbralesMulticapa();
@@ -525,7 +537,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa grafica
+  //aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa grafica
 
   chartType = 'line';
 

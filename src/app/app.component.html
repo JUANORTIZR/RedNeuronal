@@ -186,17 +186,18 @@
     <a href="#" (click)="generarArchivo()" class="btn btn-success mt-2">Guardar matriz de pesos</a>
 
 
+    <div class="grafica">
+      <div style="display: block">
+        <canvas mdbChart [chartType]="chartType" [datasets]="chartDatasets" [labels]="chartLabels"
+          [colors]="chartColors" [options]="chartOptions" [legend]="true" (chartHover)="chartHovered($event)"
+          (chartClick)="chartClicked($event)">
+        </canvas>
+      </div>
+
+    </div>
+
   </div>
   <div class="card-footer text-muted ">
     <h6 class="text-center" id="vea"> AJAM AJAM </h6>
   </div>
-</div>
-
-<div class="grafica" >
-  <div style="display: block">
-    <canvas mdbChart [chartType]="chartType" [datasets]="chartDatasets" [labels]="chartLabels" [colors]="chartColors"
-      [options]="chartOptions" [legend]="true" (chartHover)="chartHovered($event)" (chartClick)="chartClicked($event)">
-    </canvas>
-  </div>
-
 </div>
