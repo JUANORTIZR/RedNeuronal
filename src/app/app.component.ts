@@ -41,6 +41,8 @@ export class AppComponent implements OnInit {
   listaErrorPorIteraciones: number[] = [];
   iteracionesG: string[] = [];
   errorMaximoGrafi: any;
+  valido = false;
+
 
 
   ngOnInit() {
@@ -50,6 +52,9 @@ export class AppComponent implements OnInit {
 
   leerDatos(archivo) {
     var datos = archivo.target.files[0];
+
+
+
     if (datos) {
       let reader = new FileReader();
       reader.onload = () => {
@@ -144,13 +149,16 @@ export class AppComponent implements OnInit {
     if (this.modeloDeRed == "BACKPROPAGATION") {
       this.listaFuncionesActivacion = ["SIGMOIDE", "TANGENTE HIPERBOLICA"];
       this.algoritmoDeEntrenamiento = "PROPAGACION INVERSA";
+
     }
     if (this.modeloDeRed == "PERCEPTRON") {
       this.listaFuncionesActivacion = ["ESCALON"]
       this.algoritmoDeEntrenamiento = "REGLA DELTA";
+      this.funcionDeActivacion = "ESCALON"
     } if (this.modeloDeRed == "ADALINE") {
       this.listaFuncionesActivacion = ["LINEAL"];
       this.algoritmoDeEntrenamiento = "REGLA DELTA";
+      this.funcionDeActivacion = "LINEAL"
     }
     if (this.modeloDeRed == "--") {
       this.listaFuncionesActivacion = [];
@@ -279,6 +287,10 @@ export class AppComponent implements OnInit {
 
   verificarDatosParaUnicapa() {
     if (this.tipoRed == "Unicapa") {
+      if(this.totalPatrones<=0){
+         alert("Primero debes cargar los datos a entrenar");
+        return false;
+      }
 
       if (this.modeloDeRed == "--") {
         alert("Primero debes seleccionar un modelo de red en el campo modelo de red")
@@ -321,6 +333,7 @@ export class AppComponent implements OnInit {
         return true;
       }
     } else {
+      alert("Primero debe seleccionar un tipo de red");
       return false;
     }
 
@@ -451,11 +464,11 @@ export class AppComponent implements OnInit {
       for (let j = 0; j < this.totalEntradas; j++) {
         aux = 0;
         aux = this.matrizDePesosUnicapa[j][i] + (Number(this.rataDeAprendizaje) * eL[i] * this.datosDeEntrada[patron][j]);
-        matriz[j][i] = aux;
+        matriz[j][i] = Number(aux.toFixed(2));
       }
       auxUm = 0;
       auxUm = this.vectorDeUmbrales[i] + (Number(this.rataDeAprendizaje) * eL[i] * 1);
-      vector[i] = auxUm;
+      vector[i] = Number(auxUm.toFixed(2));
     }
 
     this.vectorDeUmbrales = [...vector];
@@ -472,29 +485,26 @@ export class AppComponent implements OnInit {
     this.inicializarMatrizPesosVectorUmbrales();
     this.listaErrorPorIteraciones = [];
     this.errorMaximoGrafi = [];
-    let aux = 0;
+    let aux = 2;
     this.iteracionesG = [];
     for (let i = 0; i < numeroIteraciones; i++) {
-      // if(aux <= Number(this.errorMaximoPermititdo)){
-      //   var blob = new Blob([
-      //     JSON.stringify("Matriz de pesoss") + "\n",
-      //     JSON.stringify(this.matrizDePesosUnicapa) + "\n",
-      //     JSON.stringify("Vector de umbrales") + "\n",
-      //     JSON.stringify(this.vectorDeUmbrales) + "\n",
-      //   ], { type: "text/csv;charset=utf-8" });
-      //   saveAs(blob, "DatosExportados.csv");
-      // }
-      aux = 0;
+      if (aux <= Number(this.errorMaximoPermititdo)) {
+        this.generarArchivo();
+        i = numeroIteraciones;
+        return;
+      } else {
+        aux = 0;
 
-      this.iteracionesG.push((1 + i).toString());
-      this.errorMaximoGrafi.push(this.errorMaximoPermititdo.toString());
-      for (let j = 0; j < this.totalPatrones; j++) {
-        this.errorPatron(j);
-        this.modificarPesos(j);
+        this.iteracionesG.push((1 + i).toString());
+        this.errorMaximoGrafi.push(this.errorMaximoPermititdo.toString());
+        for (let j = 0; j < this.totalPatrones; j++) {
+          this.errorPatron(j);
+          this.modificarPesos(j);
+        }
+        aux = this.calcularErrorPorIteracion(this.listaEp);
+        this.listaErrorPorIteraciones.push(aux);
+        this.listaEp = [];
       }
-      aux = this.calcularErrorPorIteracion(this.listaEp);
-      this.listaErrorPorIteraciones.push(aux);
-      this.listaEp = [];
     }
   }
 
@@ -511,20 +521,17 @@ export class AppComponent implements OnInit {
     return eI;
   }
 
-  generarArchivo() {
-
-
-
-
-    if (this.verificarDatosParaUnicapa()) {
+  entrenarRed() {
+    this.valido = this.verificarDatosParaUnicapa();
+    if (this.valido) {
       this.realizarIteraciones(this.numeroDeIteraciones);
       this.chartLabels = this.iteracionesG;
       this.chartDatasets = [
         { data: this.listaErrorPorIteraciones, label: 'Error por iteracion' },
         { data: this.errorMaximoGrafi, label: 'Error maximo permitido' }
       ];
-    }
 
+    }
     if (this.verificarDatosParaMulticapa()) {
       this.crearMatricesDePesosYUmbralesMulticapa();
       var blob = new Blob([
@@ -537,13 +544,31 @@ export class AppComponent implements OnInit {
     }
   }
 
-  //aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa grafica
+  generarArchivo() {
+    let data = [];
+    let aux;
+    for (let index = 0; index < this.matrizDePesosUnicapa.length; index++) {
+      const element = this.matrizDePesosUnicapa[index];
+      for (let index = 0; index < element.length; index++) {
+        aux = "";
+        if(index==element.length-1){
+          aux += element[index].toString()+"\n"
+        }else{
+          aux += element[index].toString()+";";
+        }
+        data.push(aux);
+      }
+    }
+    //Falta agregar los umbrales al archivo (creo)
+    var blob = new Blob([...data], { type: "text/csv;charset=utf-8" });
+    saveAs(blob, "Pesos ideales");
+  }
 
   chartType = 'line';
 
   chartDatasets = [
-    { data: this.listaErrorPorIteraciones, label: 'My First dataset' },
-    { data: [], label: 'My Second dataset' }
+    { data: this.listaErrorPorIteraciones, label: 'Error por iteracion' },
+    { data: [], label: 'Error maximo permitido' }
   ];
 
 
@@ -558,7 +583,7 @@ export class AppComponent implements OnInit {
     },
     {
       backgroundColor: 'rgba(0, 137, 132, .2)',
-      borderColor: 'rgba(0, 10, 130, .7)',
+      borderColor: 'rgba(7, 151, 16, .7)',
       borderWidth: 2,
     }
   ];

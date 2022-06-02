@@ -87,7 +87,6 @@
         <div class="input-group mb-3">
           <label class="input-group-text" for="inputGroupSelect01">Función de activación</label>
           <select (change)="getFuncionDeActivacion($event)" class="form-select" id="inputGroupSelect01">
-            <option selected>--</option>
             <option *ngFor="let funcion of listaFuncionesActivacion" ngValue="funcion">{{funcion}}</option>
           </select>
         </div>
@@ -137,6 +136,7 @@
               <span class="input-group-text" id="inputGroup-sizing-default">Cantidad de neuronas</span>
               <input (change)="getCantidadNeuronas(i,$event)" type="text" class="form-control"
                 aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+
             </div>
           </div>
 
@@ -165,13 +165,17 @@
           <span class="input-group-text" id="inputGroup-sizing-default">Numero de iteraciones</span>
           <input [(ngModel)]="numeroDeIteraciones" type="number" class="form-control" aria-label="Sizing example input"
             aria-describedby="inputGroup-sizing-default">
+
         </div>
       </div>
       <div class="col">
         <div class="input-group">
           <span class="input-group-text" id="inputGroup-sizing-default">Rata de aprendizaje</span>
           <input [(ngModel)]="rataDeAprendizaje" type="text" class="form-control" aria-label="Sizing example input"
-            aria-describedby="inputGroup-sizing-default">
+            aria-describedby="inputGroup-sizing-default" required>
+            <div *ngIf="rataDeAprendizaje == '0'" class="valid-tooltip">
+              Looks good!
+            </div>
         </div>
       </div>
       <div class="col">
@@ -183,8 +187,12 @@
       </div>
     </div>
 
-    <a href="#" (click)="generarArchivo()" class="btn btn-success mt-2">Guardar matriz de pesos</a>
+    <!-- <a href="#" (click)="entrenarRed()" class="btn btn-success mt-2">Iniciar entrenamiento</a> -->
 
+    <button (click)="entrenarRed()" type="button" class="btn btn-success mt-2" data-bs-toggle="modal" data-bs-target="#exampleModal">
+      Iniciar entrenamiento
+    </button>
+   <!--  <h5 class="text-center mt-2">Grafica de error de iteracion vs error maximo permitido</h5>
 
     <div class="grafica">
       <div style="display: block">
@@ -194,10 +202,38 @@
         </canvas>
       </div>
 
-    </div>
+    </div> -->
 
   </div>
   <div class="card-footer text-muted ">
     <h6 class="text-center" id="vea"> AJAM AJAM </h6>
+  </div>
+</div>
+
+
+<!-- Button trigger modal -->
+
+
+<!-- Modal -->
+<div *ngIf="valido" class="modal fade" data-bs-backdrop="static" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Grafica</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div style="display: block">
+          <canvas mdbChart [chartType]="chartType" [datasets]="chartDatasets" [labels]="chartLabels"
+            [colors]="chartColors" [options]="chartOptions" [legend]="true" (chartHover)="chartHovered($event)"
+            (chartClick)="chartClicked($event)">
+          </canvas>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cambiar configuracion de la red</button>
+        <button type="button" (click)="entrenarRed()" class="btn btn-primary">Volver a entranar</button>
+      </div>
+    </div>
   </div>
 </div>
