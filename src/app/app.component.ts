@@ -124,8 +124,9 @@ export class AppComponent implements OnInit {
     }
     this.matrizDePesosUnicapa = matrizDePesos;
     this.vectorDeUmbrales = vectorDeUmbrales;
-    console.log(vectorDeUmbrales);
-    console.log(matrizDePesos);
+    this.generarArchivo("Pesos iniciales");
+    console.log("Matriz de pesos",this.matrizDePesosUnicapa);
+
   }
 
   generarValoresAleatorios(menor: number, mayor: number) {
@@ -481,13 +482,13 @@ export class AppComponent implements OnInit {
 
 
   realizarIteraciones(numeroIteraciones: number) {
-    this.inicializarMatrizPesosVectorUmbrales();
+    //this.inicializarMatrizPesosVectorUmbrales();
 
     let aux = 2;
 
     for (let i = 0; i < numeroIteraciones; i++) {
       if (aux <= Number(this.errorMaximoPermititdo)) {
-        this.generarArchivo();
+        this.generarArchivo("Pesos ideales");
         i = numeroIteraciones;
         return;
       } else {
@@ -525,6 +526,7 @@ export class AppComponent implements OnInit {
       this.listaErrorPorIteraciones = [];
       this.errorMaximoGrafi = [];
       this.iteracionesG = [];
+      this.inicializarMatrizPesosVectorUmbrales();
       this.realizarIteraciones(this.numeroDeIteraciones);
 
       this.chartLabels = this.iteracionesG;
@@ -533,16 +535,16 @@ export class AppComponent implements OnInit {
         { data: this.errorMaximoGrafi, label: 'Error maximo permitido' }
       ];
     }
-    if (this.verificarDatosParaMulticapa()) {
-      this.crearMatricesDePesosYUmbralesMulticapa();
-      var blob = new Blob([
-        JSON.stringify("Lista de matrices de pesos multicapa") + "\n",
-        JSON.stringify(this.listaMatrices) + "\n",
-        JSON.stringify("Vector de umbrales") + "\n",
-        JSON.stringify(this.listaUmbrales) + "\n",
-      ], { type: "text/csv;charset=utf-8" });
-      saveAs(blob, "DatosExportadosMulticapa.csv");
-    }
+    // if (this.verificarDatosParaMulticapa()) {
+    //   this.crearMatricesDePesosYUmbralesMulticapa();
+    //   var blob = new Blob([
+    //     JSON.stringify("Lista de matrices de pesos multicapa") + "\n",
+    //     JSON.stringify(this.listaMatrices) + "\n",
+    //     JSON.stringify("Vector de umbrales") + "\n",
+    //     JSON.stringify(this.listaUmbrales) + "\n",
+    //   ], { type: "text/csv;charset=utf-8" });
+    //   saveAs(blob, "DatosExportadosMulticapa.csv");
+    // }
   }
 
   seguirIterando(){
@@ -557,7 +559,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  generarArchivo() {
+  generarArchivo(nombre) {
     let data = [];
     let aux;
     for (let index = 0; index < this.matrizDePesosUnicapa.length; index++) {
@@ -573,8 +575,8 @@ export class AppComponent implements OnInit {
       }
     }
     //Falta agregar los umbrales al archivo (creo)
-    var blob = new Blob([...data], { type: "text/csv;charset=utf-8" });
-    saveAs(blob, "Pesos ideales");
+    var blob = new Blob([...data,JSON.stringify("Vector de umbrales") + "\n",this.vectorDeUmbrales], { type: "text/csv;charset=utf-8" });
+    saveAs(blob, nombre);
   }
 
   chartType = 'line';
