@@ -14,7 +14,8 @@ import { MDBBootstrapModule } from 'angular-bootstrap-md';
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    MDBBootstrapModule.forRoot()
+    MDBBootstrapModule.forRoot(),
+    
   ],
   providers: [],
   bootstrap: [AppComponent]

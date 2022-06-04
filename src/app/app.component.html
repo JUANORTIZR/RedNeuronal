@@ -1,9 +1,9 @@
 <div class="card text-bg-dark mb-3">
   <div class="card-header text-center">
-    Red neuronal
+
   </div>
   <div class="card-body">
-    <h5 class="card-title text-center">Parametrización de red neuronal</h5>
+    <h5 class="card-title text-center mb-3">Red neuronal unicapa (Perceptron/Adaline)</h5>
 
     <div class="shadow-sm p-3 mb-5 bg-body rounded row">
       <div class="row mb-2">
@@ -52,8 +52,8 @@
       <div class="col">
         <div class="input-group mb-3">
           <label class="input-group-text" for="inputGroupSelect01">Tipo de red</label>
-          <select (change)="getTipoRed($event)" class="form-select" id="inputGroupSelect01">
-            <option selected>--</option>
+          <select disabled (change)="getTipoRed($event)" class="form-select" id="inputGroupSelect01">
+            <option selected>Unicapa</option>
             <option value="Unicapa">Unicapa</option>
             <option value="Multicapa">Multicapa</option>
           </select>
@@ -155,7 +155,7 @@
 
     <div class="row mb-2">
       <div class="col">
-        <span class="badge bg-secondary">PARAMETROS DE ENTRENAMIENTO</span>
+        <span class="badge bg-secondary" >PARAMETROS DE ENTRENAMIENTO</span>
       </div>
     </div>
 
@@ -173,9 +173,9 @@
           <span class="input-group-text" id="inputGroup-sizing-default">Rata de aprendizaje</span>
           <input [(ngModel)]="rataDeAprendizaje" type="text" class="form-control" aria-label="Sizing example input"
             aria-describedby="inputGroup-sizing-default" required>
-            <div *ngIf="rataDeAprendizaje == '0'" class="valid-tooltip">
-              Looks good!
-            </div>
+          <div *ngIf="rataDeAprendizaje == '0'" class="valid-tooltip">
+            Looks good!
+          </div>
         </div>
       </div>
       <div class="col">
@@ -189,10 +189,11 @@
 
     <!-- <a href="#" (click)="entrenarRed()" class="btn btn-success mt-2">Iniciar entrenamiento</a> -->
 
-    <button (click)="entrenarRed()" type="button" class="btn btn-success mt-2" data-bs-toggle="modal" data-bs-target="#exampleModal">
+    <button (click)="entrenarRed()" type="button" class="btn btn-success mt-2" data-bs-toggle="modal"
+      data-bs-target="#exampleModal">
       Iniciar entrenamiento
     </button>
-   <!--  <h5 class="text-center mt-2">Grafica de error de iteracion vs error maximo permitido</h5>
+    <!--  <h5 class="text-center mt-2">Grafica de error de iteracion vs error maximo permitido</h5>
 
     <div class="grafica">
       <div style="display: block">
@@ -215,25 +216,49 @@
 
 
 <!-- Modal -->
-<div *ngIf="valido" class="modal fade" data-bs-backdrop="static" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div *ngIf="valido" class="modal fade" data-bs-backdrop="static" id="exampleModal" tabindex="-1"
+  aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Grafica</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Graficas de entrenamiento</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div style="display: block">
-          <canvas mdbChart [chartType]="chartType" [datasets]="chartDatasets" [labels]="chartLabels"
-            [colors]="chartColors" [options]="chartOptions" [legend]="true" (chartHover)="chartHovered($event)"
-            (chartClick)="chartClicked($event)">
-          </canvas>
+        <div class="row">
+          <div class="col">
+            <!-- <h5>grafica 1</h5> -->
+            <div style="display: block">
+              <canvas mdbChart [chartType]="chartType" [datasets]="chartDatasets" [labels]="chartLabels"
+                [colors]="chartColors" [options]="chartOptions" [legend]="true" (chartHover)="chartHovered($event)"
+                (chartClick)="chartClicked($event)">
+              </canvas>
+            </div>
+          </div>
+          <!-- <div class="col">
+            <h5>grafica 2</h5>
+            <div style="display: block">
+              <canvas mdbChart [chartType]="chartType2" [datasets]="chartDatasets2" [labels]="chartLabels2"
+                [colors]="chartColors2" [options]="chartOptions2" [legend]="true" (chartHover)="chartHovered2($event)"
+                (chartClick)="chartClicked2($event)">
+              </canvas>
+            </div>
+          </div> -->
         </div>
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cambiar configuracion de la red</button>
-        <button type="button" (click)="entrenarRed()" class="btn btn-primary">Volver a entranar</button>
+        <button type="button" (click)="entrenarRed()" class="btn btn-dark">Volver a entranar</button>
+        <button type="button" (click)=" seguirIterando()" data-bs-toggle="tooltip" data-bs-placement="top"
+          data-bs-custom-class="custom-tooltip" title="Iterar {{numeroDeIteraciones}} veces mas"
+          class="btn btn-success">Seguir iterando</button>
       </div>
     </div>
   </div>
 </div>
+<script>
+  $(function(){
+    $('[ data-toggle="tooltip"]').tooltip()
+  })
+</script>

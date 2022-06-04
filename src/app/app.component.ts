@@ -16,7 +16,7 @@ export class AppComponent implements OnInit {
   totalSalidas: number = 0;
   totalPatrones: number = 0;
 
-  tipoRed: string = "";
+  tipoRed: string = "Unicapa";
   modeloDeRed: string = "--";
   funcionDeActivacion: string = "--";
 
@@ -287,8 +287,8 @@ export class AppComponent implements OnInit {
 
   verificarDatosParaUnicapa() {
     if (this.tipoRed == "Unicapa") {
-      if(this.totalPatrones<=0){
-         alert("Primero debes cargar los datos a entrenar");
+      if (this.totalPatrones <= 0) {
+        alert("Primero debes cargar los datos a entrenar");
         return false;
       }
 
@@ -440,7 +440,6 @@ export class AppComponent implements OnInit {
       eL.push(aux);
     }
     // console.log("Error lineal: ", eL);
-
     return eL;
   }
 
@@ -483,10 +482,9 @@ export class AppComponent implements OnInit {
 
   realizarIteraciones(numeroIteraciones: number) {
     this.inicializarMatrizPesosVectorUmbrales();
-    this.listaErrorPorIteraciones = [];
-    this.errorMaximoGrafi = [];
+
     let aux = 2;
-    this.iteracionesG = [];
+
     for (let i = 0; i < numeroIteraciones; i++) {
       if (aux <= Number(this.errorMaximoPermititdo)) {
         this.generarArchivo();
@@ -495,7 +493,7 @@ export class AppComponent implements OnInit {
       } else {
         aux = 0;
 
-        this.iteracionesG.push((1 + i).toString());
+        this.iteracionesG.push((this.iteracionesG.length + 1).toString());
         this.errorMaximoGrafi.push(this.errorMaximoPermititdo.toString());
         for (let j = 0; j < this.totalPatrones; j++) {
           this.errorPatron(j);
@@ -524,13 +522,16 @@ export class AppComponent implements OnInit {
   entrenarRed() {
     this.valido = this.verificarDatosParaUnicapa();
     if (this.valido) {
+      this.listaErrorPorIteraciones = [];
+      this.errorMaximoGrafi = [];
+      this.iteracionesG = [];
       this.realizarIteraciones(this.numeroDeIteraciones);
+
       this.chartLabels = this.iteracionesG;
       this.chartDatasets = [
         { data: this.listaErrorPorIteraciones, label: 'Error por iteracion' },
         { data: this.errorMaximoGrafi, label: 'Error maximo permitido' }
       ];
-
     }
     if (this.verificarDatosParaMulticapa()) {
       this.crearMatricesDePesosYUmbralesMulticapa();
@@ -544,6 +545,18 @@ export class AppComponent implements OnInit {
     }
   }
 
+  seguirIterando(){
+    this.valido = this.verificarDatosParaUnicapa();
+    if (this.valido) {
+      this.realizarIteraciones(this.numeroDeIteraciones);
+      this.chartLabels = this.iteracionesG;
+      this.chartDatasets = [
+        { data: this.listaErrorPorIteraciones, label: 'Error por iteracion' },
+        { data: this.errorMaximoGrafi, label: 'Error maximo permitido' }
+      ];
+    }
+  }
+
   generarArchivo() {
     let data = [];
     let aux;
@@ -551,10 +564,10 @@ export class AppComponent implements OnInit {
       const element = this.matrizDePesosUnicapa[index];
       for (let index = 0; index < element.length; index++) {
         aux = "";
-        if(index==element.length-1){
-          aux += element[index].toString()+"\n"
-        }else{
-          aux += element[index].toString()+";";
+        if (index == element.length - 1) {
+          aux += element[index].toString() + "\n"
+        } else {
+          aux += element[index].toString() + ";";
         }
         data.push(aux);
       }
@@ -599,6 +612,7 @@ export class AppComponent implements OnInit {
   chartHovered(event: any) {
     console.log(event);
   }
+
 
 
 }
