@@ -503,6 +503,7 @@ export class AppComponent implements OnInit {
         aux = this.calcularErrorPorIteracion(this.listaEp);
         this.listaErrorPorIteraciones.push(aux);
         this.listaEp = [];
+        
       }
     }
   }
