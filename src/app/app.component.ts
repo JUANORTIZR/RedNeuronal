@@ -678,7 +678,10 @@ export class AppComponent implements OnInit {
 
   simularRed() {
     this.YR = [];
-    this.YR = this.salidaDeLaRed(this.patronSeleccionado);
+    alert(this.patronSeleccionadoInput);
+    this.YR = this.salidaDeLaRedSimu(this.patronSeleccionadoInput);
+
+
 
    // alert("Salida de la red " + this.YR + " vs " + "Salida deseada " + this.datosDeSalida[this.patronSeleccionado]);
     let valorYR = [];
