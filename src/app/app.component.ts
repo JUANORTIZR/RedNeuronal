@@ -3,6 +3,7 @@ import { Capa } from './Modelos/Capa';
 
 import { saveAs } from 'file-saver';
 import { RouteReuseStrategy } from '@angular/router';
+import { Usuario } from './Modelos/Usuario';
 
 @Component({
   selector: 'app-root',
@@ -15,10 +16,12 @@ export class AppComponent implements OnInit {
   totalEntradas: number = 0;
   totalSalidas: number = 0;
   totalPatrones: number = 0;
-
+  simulacion = true;
   tipoRed: string = "Unicapa";
   modeloDeRed: string = "--";
   funcionDeActivacion: string = "--";
+  login: boolean = false;
+  usuario: Usuario;
 
   datosDeEntrada: number[][] = [];
   datosDeSalida: number[][] = [];
@@ -42,11 +45,16 @@ export class AppComponent implements OnInit {
   iteracionesG: string[] = [];
   errorMaximoGrafi: any;
   valido = false;
+  matrizDePesosInicial: number[][] = [];
+  vectorDeUmbralesInicial: number[][] = [];
+  patronSeleccionado: any;
+  patronSeleccionadoInput: any;
+  YR: any[];
 
 
 
   ngOnInit() {
-
+    this.usuario = new Usuario();
   }
 
 
@@ -68,6 +76,39 @@ export class AppComponent implements OnInit {
     }
   }
 
+  leerPesos(archivo) {
+    var datos = archivo.target.files[0];
+    if (datos) {
+      let reader = new FileReader();
+      reader.onload = () => {
+        let registros;
+        registros = reader.result;
+        this.separarUmbrales(registros);
+      }
+      reader.readAsText(datos);
+    }
+  }
+
+  separarUmbrales(registros) {
+    let datosSeparados = registros.split('"Vector de umbrales"');
+    this.matrizDePesosUnicapa = [];
+    this.vectorDeUmbrales = [];
+    console.log(datosSeparados);
+    let pesos = datosSeparados[0].split('\n');
+    let umbrales = datosSeparados[1].split('\n');
+    pesos.forEach(element => {
+      let fila = element.split(';');
+      fila = fila.map(num => { return Number(num); });
+      this.matrizDePesosUnicapa.push(fila);
+    });
+    this.matrizDePesosUnicapa.splice(-1, 1);
+    umbrales = umbrales[1].split(",");
+    umbrales = umbrales.map(u => { return Number(u) });
+    this.vectorDeUmbrales = umbrales;
+    console.log("matriz de pesos: ", this.matrizDePesosUnicapa);
+    console.log("vector de umbrales: ", this.vectorDeUmbrales);
+  }
+
   calcularSEP(registros) {
     let datos = registros.split("\r\n");
     let identificadores = datos[0].split(";");
@@ -76,7 +117,7 @@ export class AppComponent implements OnInit {
     this.totalSalidas = identificadores.filter(x => x === "SALIDA").length;
     this.totalPatrones = datos.length - 1;
     this.separarListas(datos);
-    if (this.tipoRed == "Unicapa") {
+    if (this.tipoRed == "Unicapa" && !this.simulacion) {
       this.inicializarMatrizPesosVectorUmbrales();
     }
 
@@ -124,9 +165,13 @@ export class AppComponent implements OnInit {
     }
     this.matrizDePesosUnicapa = matrizDePesos;
     this.vectorDeUmbrales = vectorDeUmbrales;
-    this.generarArchivo("Pesos iniciales");
-    console.log("Matriz de pesos",this.matrizDePesosUnicapa);
+    this.matrizDePesosInicial = matrizDePesos;
+    this.vectorDeUmbralesInicial = vectorDeUmbrales;
 
+  }
+
+  guardarPesosIniciales() {
+    this.generarArchivo("Pesos iniciales", this.matrizDePesosInicial, this.vectorDeUmbralesInicial);
   }
 
   generarValoresAleatorios(menor: number, mayor: number) {
@@ -142,6 +187,22 @@ export class AppComponent implements OnInit {
       }
 
     }
+  }
+
+  getUsuario(datos) {
+    this.usuario.nombreUsuario = datos.target.value;
+    if (this.usuario.nombreUsuario == "Usuario") {
+      this.simulacion = true;
+    } else {
+      this.simulacion = false;
+    }
+  }
+
+  ingresar() {
+    if (this.usuario.nombreUsuario != null) {
+      this.login = true;
+    }
+
   }
 
   getModeloDeRed(datos) {
@@ -414,18 +475,50 @@ export class AppComponent implements OnInit {
         aux = aux + (Number(this.datosDeEntrada[patron][j]) * Number(this.matrizDePesosUnicapa[j][i]));
       }
       aux = aux - Number(this.vectorDeUmbrales[i]);
-      salidasFuncionSoma.push(Number(aux.toFixed(2)))
+      salidasFuncionSoma.push(Number(aux))
     }
+
+    return salidasFuncionSoma;
+  }
+
+  funcionSomaSimu(patron:number[]) {
+    let salidasFuncionSoma: number[] = [];
+    let aux = 0;
+    for (let i = 0; i < this.totalSalidas; i++) {
+      aux = 0;
+      for (let j = 0; j < this.totalEntradas; j++) {
+        aux = aux + (Number(patron[j]) * Number(this.matrizDePesosUnicapa[j][i]));
+      }
+      aux = aux - Number(this.vectorDeUmbrales[i]);
+      salidasFuncionSoma.push(Number(aux))
+    }
+
     return salidasFuncionSoma;
   }
 
   salidaDeLaRed(patron: number) {
     let yR = [];
+
     let s = this.funcionSoma(patron);
     for (let i = 0; i < this.totalSalidas; i++) {
       if (this.funcionDeActivacion == "LINEAL") {
         yR.push(s[i]);
-      } else if (this.funcionDeActivacion = "ESCALON") {
+      } else if (this.funcionDeActivacion == "ESCALON") {
+        yR.push(s[i] >= 0 ? 1 : 0);
+      }
+    }
+    // console.log("Salida de la red: ", yR);
+    return yR;
+  }
+
+  salidaDeLaRedSimu(patron) {
+    let yR = [];
+
+    let s = this.funcionSomaSimu(patron);
+    for (let i = 0; i < this.totalSalidas; i++) {
+      if (this.funcionDeActivacion == "LINEAL") {
+        yR.push(s[i]);
+      } else if (this.funcionDeActivacion == "ESCALON") {
         yR.push(s[i] >= 0 ? 1 : 0);
       }
     }
@@ -437,10 +530,10 @@ export class AppComponent implements OnInit {
     let eL: number[] = [];
     let yR = this.salidaDeLaRed(patron);
     for (let i = 0; i < this.totalSalidas; i++) {
-      let aux = Number((this.datosDeSalida[patron][i] - yR[i]).toFixed(2));
+      let aux = Number((this.datosDeSalida[patron][i] - yR[i]));
       eL.push(aux);
     }
-    // console.log("Error lineal: ", eL);
+    console.log("Error lineal: ", eL);
     return eL;
   }
 
@@ -488,7 +581,8 @@ export class AppComponent implements OnInit {
 
     for (let i = 0; i < numeroIteraciones; i++) {
       if (aux <= Number(this.errorMaximoPermititdo)) {
-        this.generarArchivo("Pesos ideales");
+        this.generarArchivo("Pesons iniciales", this.matrizDePesosInicial, this.vectorDeUmbralesInicial)
+        this.generarArchivo("Pesos ideales", this.matrizDePesosUnicapa, this.vectorDeUmbrales);
         i = numeroIteraciones;
         return;
       } else {
@@ -503,7 +597,7 @@ export class AppComponent implements OnInit {
         aux = this.calcularErrorPorIteracion(this.listaEp);
         this.listaErrorPorIteraciones.push(aux);
         this.listaEp = [];
-        
+
       }
     }
   }
@@ -515,7 +609,7 @@ export class AppComponent implements OnInit {
     for (let i = 0; i < datos.length; i++) {
       aux += datos[i];
     }
-    eI = Number((aux / this.totalPatrones).toFixed(2));
+    eI = Number(aux / this.totalPatrones);
     aux = 0;
     console.log("Error por iteracion: ", eI);
     return eI;
@@ -548,7 +642,7 @@ export class AppComponent implements OnInit {
     // }
   }
 
-  seguirIterando(){
+  seguirIterando() {
     this.valido = this.verificarDatosParaUnicapa();
     if (this.valido) {
       this.realizarIteraciones(this.numeroDeIteraciones);
@@ -560,11 +654,69 @@ export class AppComponent implements OnInit {
     }
   }
 
-  generarArchivo(nombre) {
+  getPatron(event: any) {
+    let data = event.target.value;
+    this.patronSeleccionado = data;
+    let valorYD = [];
+    let valorYR = [];
+    this.patronSeleccionadoInput = this.datosDeEntrada[data];
+    // for (let i = -2; i <= this.datosDeSalida[this.patronSeleccionado][0]; i++) {
+    //   valorYD.push(i);
+    // }
+    for (let i = -2; i <= this.datosDeSalida[this.patronSeleccionado][0]; i++) {
+
+      //if(i != this.datosDeSalida[this.patronSeleccionado][0]){
+        valorYD.push(i);
+     // }
+    }
+
+    this.chartDatasetsS = [
+      { data: valorYR, label: 'YR' },
+      { data: valorYD, label: 'YD' }
+    ];
+  }
+
+  simularRed() {
+    this.YR = [];
+    this.YR = this.salidaDeLaRed(this.patronSeleccionado);
+
+   // alert("Salida de la red " + this.YR + " vs " + "Salida deseada " + this.datosDeSalida[this.patronSeleccionado]);
+    let valorYR = [];
+    let valorYD = [];
+    for (let i = -2; i <= this.YR[0]; i++) {
+      valorYR.push(i);
+      // if (YR[0] != i) {
+      //   valorYD.push(i);
+      // }
+
+    }
+
+    for (let i = -2; i <= this.datosDeSalida[this.patronSeleccionado][0]; i++) {
+      valorYD.push(i);
+      // if (YR[0] != i) {
+      //   valorYD.push(i);
+      // }
+
+    }
+
+    // for (let i = this.datosDeSalida[this.patronSeleccionado][0]; i >= -2; i--) {
+    //   valorYD.push(i);
+    //   if(i != this.datosDeSalida[this.patronSeleccionado][0]){
+    //     valorYR.push(i);
+    //   }
+    // }
+
+    this.chartDatasetsS = [
+      { data: valorYR, label: 'Salida de la red' },
+      { data: valorYD, label: 'Salida deseada' }
+    ];
+  }
+
+  generarArchivo(nombre, matrizDePesos, vectorDeUmbrales) {
     let data = [];
     let aux;
-    for (let index = 0; index < this.matrizDePesosUnicapa.length; index++) {
-      const element = this.matrizDePesosUnicapa[index];
+    for (let index = 0; index < matrizDePesos.length; index++) {
+      const element = matrizDePesos[index];
       for (let index = 0; index < element.length; index++) {
         aux = "";
         if (index == element.length - 1) {
@@ -576,7 +728,7 @@ export class AppComponent implements OnInit {
       }
     }
     //Falta agregar los umbrales al archivo (creo)
-    var blob = new Blob([...data,JSON.stringify("Vector de umbrales") + "\n",this.vectorDeUmbrales], { type: "text/csv;charset=utf-8" });
+    var blob = new Blob([...data, JSON.stringify("Vector de umbrales") + "\n", vectorDeUmbrales], { type: "text/csv;charset=utf-8" });
     saveAs(blob, nombre);
   }
 
@@ -605,6 +757,34 @@ export class AppComponent implements OnInit {
   ];
 
   chartOptions: any = {
+    responsive: true
+  };
+
+  chartTypeS = 'line';
+
+  chartDatasetsS = [
+    { data: [], label: 'YD' },
+    { data: [], label: 'YR' }
+  ];
+
+
+
+  chartLabelsS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+
+  chartColorsS = [
+    {
+      backgroundColor: 'rgba(105, 0, 132, .2)',
+      borderColor: 'rgba(200, 99, 132, .7)',
+      borderWidth: 2,
+    },
+    {
+      backgroundColor: 'rgba(0, 137, 132, .2)',
+      borderColor: 'rgba(7, 151, 16, .7)',
+      borderWidth: 2,
+    }
+  ];
+
+  chartOptionsS: any = {
     responsive: true
   };
 

@@ -1,8 +1,67 @@
-<div class="card text-bg-dark mb-3">
-  <div class="card-header text-center">
+<div class="card bg-dark text-white " *ngIf="!login">
+  <img src="../assets/24_vector_image.jpg" class="card-img" alt="...">
+  <div class="card-img-overlay ">
+    <div class="card-body" id="login" *ngIf="!login">
 
+      <div class="card text-bg-dark  my-5" id="cuerpoLogin">
+        <div class="card-header">
+          <h5 class="fw-bold fst-italic text-center">Login</h5>
+        </div>
+        <div class="card-body">
+          <div class="input-group mb-3">
+            <label class="input-group-text" for="inputGroupSelect01">Tipo de usuario</label>
+            <select (change)="getUsuario($event)" class="form-select" id="inputGroupSelect01">
+              <option selected>Seleccione...</option>
+              <option value="Admin">Admin</option>
+              <option value="Programador">Programador</option>
+              <option value="Usuario">Usuario</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <span class="input-group-text" id="inputGroup-sizing-default">Clave </span>
+            <input type="text" [(ngModel)]="usuario.clave" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-default">
+          </div>
+          <div class="d-grid my-2 gap-2 col-6 mx-auto">
+            <button (click)="ingresar()" class="btn btn-success" type="button">Ingresar</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="card-body">
+</div>
+
+
+
+<div class="card text-bg-dark mb-3" *ngIf="login">
+  <div class="card-header">
+    <nav class="navbar navbar-expand-lg bg-dark">
+      <div class="container-fluid">
+        <ul class="nav nav-pills card-header-pills">
+          <li class="nav-item" *ngIf="usuario.nombreUsuario=='Admin' || usuario.nombreUsuario=='Programador'">
+            <a class="nav-link active" *ngIf="simulacion==false" aria-current="true" href="#">Entrenamieno</a>
+            <a class="nav-link" *ngIf="simulacion" (click)="simulacion = false" aria-current="true"
+              href="#">Entrenamieno</a>
+          </li>
+          <li class="nav-item"
+            *ngIf="usuario.nombreUsuario=='Admin' || usuario.nombreUsuario=='Programador' || usuario.nombreUsuario=='Usuario' ">
+            <a class="nav-link active" *ngIf="simulacion" href="#">Simulacion</a>
+            <a class="nav-link" *ngIf="simulacion==false" (click)="simulacion = true" href="#">Simulacion</a>
+          </li>
+        </ul>
+        <span class="navbar-text" (click)="login = false">
+          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="red" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z"/>
+            <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
+          </svg>
+        </span>
+      </div>
+    </nav>
+  </div>
+
+
+
+  <div class="card-body" *ngIf="!simulacion && login">
     <h5 class="card-title text-center mb-3">Red neuronal unicapa (Perceptron/Adaline)</h5>
 
     <div class="shadow-sm p-3 mb-5 bg-body rounded row">
@@ -14,6 +73,8 @@
       <div class="row">
         <div class="input-group mb-3">
           <input type="file" (change)="leerDatos($event)" class="form-control" id="inputGroupFile01">
+          <button (click)="guardarPesosIniciales()" class="btn btn-outline-secondary" type="button"
+            id="inputGroupFileAddon04">Descargar pesos iniciales</button>
         </div>
       </div>
 
@@ -155,7 +216,7 @@
 
     <div class="row mb-2">
       <div class="col">
-        <span class="badge bg-secondary" >PARAMETROS DE ENTRENAMIENTO</span>
+        <span class="badge bg-secondary">PARAMETROS DE ENTRENAMIENTO</span>
       </div>
     </div>
 
@@ -206,6 +267,84 @@
     </div> -->
 
   </div>
+
+  <div class="card-body" *ngIf="simulacion && login">
+    <h5 class="card-title text-center mb-3">SIMULACION DE LA RED</h5>
+    <div class="shadow-sm p-3 mb-5 bg-body rounded row">
+      <div class="row">
+        <div class="col-6">
+          <div class="mb-2">
+            <span class="badge bg-secondary">CARGAR BANCO DE DATOS</span>
+          </div>
+          <div class="input-group mb-3">
+            <input type="file" (change)="leerDatos($event)" class="form-control" id="inputGroupFile01">
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="mb-2">
+            <span class="badge bg-secondary">CARGAR PESOS IDEALES</span>
+          </div>
+          <div class="input-group mb-3">
+            <input type="file" (change)="leerPesos($event)" class="form-control" id="inputGroupFile01">
+          </div>
+        </div>
+
+
+      </div>
+
+
+
+
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="input-group mb-3">
+          <label class="input-group-text" for="inputGroupSelect01">Patron a simular</label>
+          <select (change)="getPatron($event)" class="form-select" id="inputGroupSelect01">
+            <option selected>Seleccione un patron</option>
+            <option *ngFor="let item of datosDeEntrada; let i = index" [value]="i">{{item +" = "+ datosDeSalida[i]}}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="col">
+        <div class="input-group">
+          <span class="input-group-text" id="inputGroup-sizing-default">Patron </span>
+          <input type="text" [(ngModel)]="patronSeleccionadoInput" class="form-control"
+            aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="input-group mb-2">
+          <label class="input-group-text" for="inputGroupSelect01">Modelo de la red</label>
+          <select (change)="getModeloDeRed($event)" class="form-select" id="inputGroupSelect01">
+            <option selected>--</option>
+            <option value="PERCEPTRON">PERCEPTRON</option>
+            <option value="ADALINE">ADALINE</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <button (click)="simularRed()" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+      Simular
+    </button>
+
+    <div class="row">
+      <div class="col">
+        <h5 class="text-center mt-2">Salida de la red vs salida deseada</h5>
+        <div style="display: block">
+          <canvas mdbChart [chartType]="chartTypeS" [datasets]="chartDatasetsS" [labels]="chartLabelsS"
+            [colors]="chartColorsS" [options]="chartOptionsS" [legend]="true" (chartHover)="chartHovered($event)"
+            (chartClick)="chartClicked($event)">
+          </canvas>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
   <div class="card-footer text-muted ">
     <h6 class="text-center" id="vea"> AJAM AJAM </h6>
   </div>
@@ -235,20 +374,12 @@
               </canvas>
             </div>
           </div>
-          <!-- <div class="col">
-            <h5>grafica 2</h5>
-            <div style="display: block">
-              <canvas mdbChart [chartType]="chartType2" [datasets]="chartDatasets2" [labels]="chartLabels2"
-                [colors]="chartColors2" [options]="chartOptions2" [legend]="true" (chartHover)="chartHovered2($event)"
-                (chartClick)="chartClicked2($event)">
-              </canvas>
-            </div>
-          </div> -->
         </div>
 
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cambiar configuracion de la red</button>
+        <button type="button" (click)="guardarPesosIniciales()" class="btn btn-dark">Descargar pesos iniciales</button>
         <button type="button" (click)="entrenarRed()" class="btn btn-dark">Volver a entranar</button>
         <button type="button" (click)=" seguirIterando()" data-bs-toggle="tooltip" data-bs-placement="top"
           data-bs-custom-class="custom-tooltip" title="Iterar {{numeroDeIteraciones}} veces mas"
@@ -257,8 +388,30 @@
     </div>
   </div>
 </div>
-<script>
-  $(function(){
-    $('[ data-toggle="tooltip"]').tooltip()
-  })
-</script>
+
+
+
+<!--Modal alert-->
+<!-- Button trigger modal -->
+<!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+  Launch static backdrop modal
+</button> -->
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Salida de la red</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Salida de la red <b>{{YR}}</b> vs salida deseada <b>{{datosDeSalida[patronSeleccionado]}}</b>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
